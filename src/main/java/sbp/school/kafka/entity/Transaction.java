@@ -19,6 +19,10 @@ public class Transaction {
     )
     private LocalDateTime operationDate;
 
+    public Transaction() {
+
+    }
+
     public Transaction(OperationType operationType, double amount, String account, LocalDateTime operationDate) {
 
         this.operationType = operationType;

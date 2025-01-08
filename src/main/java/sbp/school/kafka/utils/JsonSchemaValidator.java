@@ -47,12 +47,19 @@ public class JsonSchemaValidator {
 
     public void validate(String jsonString) throws JsonProcessingException {
 
-        JsonNode jsonNode = objectMapper.readTree(jsonString);
+        validateJsonNode(objectMapper.readTree(jsonString));
+    }
+
+    public void validate(Object object) {
+
+        validateJsonNode(objectMapper.valueToTree(object));
+    }
+
+    private void validateJsonNode(JsonNode jsonNode) {
 
         Set<ValidationMessage> validationResults = schema.validate(jsonNode);
 
         if (!validationResults.isEmpty()) {
-
             log.error("Validation error: {}", validationResults);
 
             throw new RuntimeException(validationResults.toString());

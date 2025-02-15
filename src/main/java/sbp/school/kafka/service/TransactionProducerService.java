@@ -9,17 +9,17 @@ import sbp.school.kafka.entity.Transaction;
 import java.util.Optional;
 import java.util.Properties;
 
-public class ProducerService {
+import static sbp.school.kafka.message.Message.RESULT_MESSAGE;
 
-    private static final Logger log = LoggerFactory.getLogger(ProducerService.class);
+public class TransactionProducerService {
 
-    private static final String RESULT_MESSAGE = "{}. offset = {}, partition = {}";
+    private static final Logger log = LoggerFactory.getLogger(TransactionProducerService.class);
 
     private final KafkaProducer<String, Transaction> producer;
 
     private final String topic;
 
-    public ProducerService(Properties properties) {
+    public TransactionProducerService(Properties properties) {
 
         producer = new KafkaProducer<>(properties);
         topic = properties.getProperty("topic.name");
@@ -27,12 +27,14 @@ public class ProducerService {
 
     public void send(Transaction transaction) {
 
+        TransactionSendInfoService.addSentTransaction(transaction);
+
         ProducerRecord<String, Transaction> record = new ProducerRecord<>(topic, transaction);
 
         producer.send(record, (recordMetadata, exception) -> Optional.ofNullable(exception)
                 .ifPresentOrElse(
-                        e -> log.error(RESULT_MESSAGE, e.getMessage(), recordMetadata.offset(), recordMetadata.partition()),
-                        () -> log.debug(RESULT_MESSAGE, "Success", recordMetadata.offset(), recordMetadata.partition())
+                        e -> log.error(RESULT_MESSAGE, e.getMessage(), topic, recordMetadata.offset(), recordMetadata.partition()),
+                        () -> log.error(RESULT_MESSAGE, "Success", topic, recordMetadata.offset(), recordMetadata.partition())
                 ));
     }
 

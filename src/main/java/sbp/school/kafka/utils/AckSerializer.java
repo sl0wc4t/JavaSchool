@@ -2,47 +2,37 @@ package sbp.school.kafka.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sbp.school.kafka.entity.Transaction;
+import sbp.school.kafka.entity.Ack;
 import sbp.school.kafka.message.Message;
 
 import java.nio.charset.StandardCharsets;
 
 import static java.util.Objects.nonNull;
 
-public class TransactionSerializer implements Serializer<Transaction> {
+public class AckSerializer implements Serializer<Ack> {
 
-    private static final Logger log = LoggerFactory.getLogger(TransactionSerializer.class);
+    private static final Logger log = LoggerFactory.getLogger(AckSerializer.class);
 
     private final ObjectMapper objectMapper;
 
-    private final JsonSchemaValidator jsonSchemaValidator;
+    public AckSerializer() {
 
-    public TransactionSerializer() {
-
-        objectMapper = new ObjectMapper()
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .registerModule(new JavaTimeModule());
-
-        jsonSchemaValidator = new JsonSchemaValidator(objectMapper);
+        objectMapper = new ObjectMapper();
     }
 
     @Override
-    public byte[] serialize(String topic, Transaction data) {
+    public byte[] serialize(String topic, Ack data) {
 
         if (nonNull(data)) {
             try {
 
-                String jsonString = objectMapper.writeValueAsString(data);
+                String value = objectMapper.writeValueAsString(data);
 
-                jsonSchemaValidator.validate(jsonString);
-
-                return jsonString.getBytes(StandardCharsets.UTF_8);
+                return value.getBytes(StandardCharsets.UTF_8);
             } catch (JsonProcessingException e) {
 
                 log.error(Message.SERIALIZATION_ERROR, e.getMessage());

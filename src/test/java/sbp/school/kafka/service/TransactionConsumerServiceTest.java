@@ -4,21 +4,21 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import sbp.school.kafka.configuration.ConsumerConfiguration;
 
-public class ConsumerServiceTest {
+public class TransactionConsumerServiceTest {
 
-    private ConsumerService consumerService;
+    private TransactionConsumerService transactionConsumerService;
 
     @BeforeMethod
     void init() {
 
         ConsumerConfiguration consumerConfiguration = new ConsumerConfiguration();
 
-        consumerService = new ConsumerService(consumerConfiguration.getProperties());
+        transactionConsumerService = new TransactionConsumerService(consumerConfiguration.getTransactionProperties());
     }
 
     @Test
     public void read_test() {
 
-        consumerService.read();
+        transactionConsumerService.read();
     }
 }

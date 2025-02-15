@@ -11,16 +11,16 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
 
-public class ConsumerService {
+import static sbp.school.kafka.message.Message.PROCESSING_ERROR_MESSAGE;
+import static sbp.school.kafka.message.Message.PROCESSING_RESULT_MESSAGE;
 
-    private static final Logger log = LoggerFactory.getLogger(ConsumerService.class);
+public class TransactionConsumerService {
 
-    private static final String PROCESSING_RESULT_MESSAGE = "topic = {}, partition = {}, offset = {}, value = {}, groupId = {}";
-    private static final String PROCESSING_ERROR_MESSAGE = "Processing record failed {}";
+    private static final Logger log = LoggerFactory.getLogger(TransactionConsumerService.class);
 
     private final KafkaConsumer<String, Transaction> consumer;
 
-    public ConsumerService(Properties properties) {
+    public TransactionConsumerService(Properties properties) {
 
         consumer = new KafkaConsumer<>(properties);
         consumer.subscribe(List.of(properties.getProperty("topic.name")));
@@ -33,14 +33,7 @@ public class ConsumerService {
             while (true) {
                 ConsumerRecords<String, Transaction> records = consumer.poll(Duration.ofMillis(100));
 
-                for (ConsumerRecord<String, Transaction> record : records) {
-                    log.debug(PROCESSING_RESULT_MESSAGE,
-                            record.topic(),
-                            record.partition(),
-                            record.offset(),
-                            record.value(),
-                            consumer.groupMetadata().groupId());
-                }
+                process(records);
 
                 consumer.commitAsync();
             }
@@ -56,6 +49,20 @@ public class ConsumerService {
 
                 consumer.close();
             }
+        }
+    }
+
+    private void process(ConsumerRecords<String, Transaction> records) {
+
+        for (ConsumerRecord<String, Transaction> record : records) {
+            log.error(PROCESSING_RESULT_MESSAGE,
+                    record.topic(),
+                    record.offset(),
+                    record.partition(),
+                    record.value(),
+                    consumer.groupMetadata().groupId());
+
+            TransactionSendInfoService.addReceivedTransaction(record.value());
         }
     }
 }

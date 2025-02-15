@@ -3,6 +3,9 @@
   "title": "Transaction",
   "type": "object",
   "properties": {
+    "id": {
+      "type": "number"
+    },
     "operationType": {
       "type": "string",
       "enum": [
@@ -26,6 +29,7 @@
     }
   },
   "required": [
+    "id",
     "operationType",
     "amount",
     "account",

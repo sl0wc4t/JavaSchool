@@ -9,6 +9,7 @@
         <json.validator.version>1.5.4</json.validator.version>
         <kafka.version>3.9.0</kafka.version>
         <log4j.version>2.24.3</log4j.version>
+        <postgresql.version>42.7.5</postgresql.version>
         <testng.version>7.10.2</testng.version>
     </properties>
 
@@ -73,6 +74,11 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j2-impl</artifactId>
             <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>

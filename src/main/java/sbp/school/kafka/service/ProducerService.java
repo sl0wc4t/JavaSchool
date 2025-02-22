@@ -1,6 +1,7 @@
 package sbp.school.kafka.service;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,7 @@ public class ProducerService {
 
     private static final String RESULT_MESSAGE = "{}. offset = {}, partition = {}";
 
-    private final KafkaProducer<String, Transaction> producer;
+    private final Producer<String, Transaction> producer;
 
     private final String topic;
 
@@ -25,13 +26,23 @@ public class ProducerService {
         topic = properties.getProperty("topic.name");
     }
 
+    public ProducerService(Producer<String, Transaction> producer, String topic) {
+
+        this.producer = producer;
+        this.topic = topic;
+    }
+
     public void send(Transaction transaction) {
 
         ProducerRecord<String, Transaction> record = new ProducerRecord<>(topic, transaction);
 
         producer.send(record, (recordMetadata, exception) -> Optional.ofNullable(exception)
                 .ifPresentOrElse(
-                        e -> log.error(RESULT_MESSAGE, e.getMessage(), recordMetadata.offset(), recordMetadata.partition()),
+                        e -> {
+                            log.error(RESULT_MESSAGE, e.getMessage(), recordMetadata.offset(), recordMetadata.partition());
+
+                            throw new RuntimeException(e);
+                        },
                         () -> log.debug(RESULT_MESSAGE, "Success", recordMetadata.offset(), recordMetadata.partition())
                 ));
     }

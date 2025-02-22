@@ -2,6 +2,7 @@ package sbp.school.kafka.service;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sbp.school.kafka.entity.Ack;
@@ -31,13 +32,25 @@ public class AckProducerService {
 
         producer.send(record, (recordMetadata, exception) -> Optional.ofNullable(exception)
                 .ifPresentOrElse(
-                        e -> log.error(RESULT_MESSAGE, e.getMessage(), topic, recordMetadata.offset(), recordMetadata.partition()),
-                        () -> log.error(RESULT_MESSAGE, "Success", topic, recordMetadata.offset(), recordMetadata.partition())
+                        e -> handleError(e, recordMetadata),
+                        () -> processAck(recordMetadata)
                 ));
     }
 
     public void close() {
 
         producer.close();
+
+        log.info("Ack Producer is closed");
+    }
+
+    private void handleError(Exception e, RecordMetadata recordMetadata) {
+
+        log.error(RESULT_MESSAGE, e.getMessage(), topic, recordMetadata.offset(), recordMetadata.partition());
+    }
+
+    private void processAck(RecordMetadata recordMetadata) {
+
+        log.info(RESULT_MESSAGE, "Success", topic, recordMetadata.offset(), recordMetadata.partition());
     }
 }

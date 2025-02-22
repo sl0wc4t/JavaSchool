@@ -11,15 +11,20 @@ public class ConsumerConfiguration {
 
     private static final Logger log = LoggerFactory.getLogger(ConsumerConfiguration.class);
 
-    private static final String CONSUMER_PROPERTIES_FILE_PATH = "src/main/resources/consumer.properties";
+    private static final String TRANSACTION_CONSUMER_PROPERTIES_FILE_PATH = "src/main/resources/transaction-consumer.properties";
 
-    private final Properties properties = new Properties();
+    private static final String ACK_CONSUMER_PROPERTIES_FILE_PATH = "src/main/resources/ack-consumer.properties";
+
+    private final Properties transactionProperties = new Properties();
+
+    private final Properties ackProperties = new Properties();
 
     public ConsumerConfiguration() {
 
         try {
 
-            properties.load(new FileInputStream(CONSUMER_PROPERTIES_FILE_PATH));
+            transactionProperties.load(new FileInputStream(TRANSACTION_CONSUMER_PROPERTIES_FILE_PATH));
+            ackProperties.load(new FileInputStream(ACK_CONSUMER_PROPERTIES_FILE_PATH));
         } catch (IOException e) {
 
             log.error("Loading consumer configuration file failed: {}", e.getMessage());
@@ -28,8 +33,13 @@ public class ConsumerConfiguration {
         }
     }
 
-    public Properties getProperties() {
+    public Properties getTransactionProperties() {
 
-        return properties;
+        return transactionProperties;
+    }
+
+    public Properties getAckProperties() {
+
+        return ackProperties;
     }
 }

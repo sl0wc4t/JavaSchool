@@ -8,6 +8,7 @@ import org.apache.kafka.common.serialization.Deserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sbp.school.kafka.entity.Transaction;
+import sbp.school.kafka.message.Message;
 
 import java.io.IOException;
 
@@ -17,8 +18,6 @@ public class TransactionDeserializer implements Deserializer<Transaction> {
 
     private static final Logger log = LoggerFactory.getLogger(TransactionDeserializer.class);
 
-    private static final String ERROR_MESSAGE = "Deserialization error: {}";
-    private static final String BYTES_IS_NULL_MESSAGE = "Deserialization error: Bytes is null";
     private final ObjectMapper objectMapper;
 
     private final JsonSchemaValidator jsonSchemaValidator;
@@ -45,14 +44,14 @@ public class TransactionDeserializer implements Deserializer<Transaction> {
                 return transaction;
             } catch (IOException e) {
 
-                log.error(ERROR_MESSAGE, e.getMessage());
+                log.error(Message.DESERIALIZATION_ERROR, e.getMessage());
 
                 throw new SerializationException(e);
             }
         } else {
-            log.error(BYTES_IS_NULL_MESSAGE);
+            log.error(Message.DESERIALIZATION_ERROR_BYTES_IS_NULL);
 
-            throw new SerializationException(BYTES_IS_NULL_MESSAGE);
+            throw new SerializationException(Message.DESERIALIZATION_ERROR_BYTES_IS_NULL);
         }
     }
 }

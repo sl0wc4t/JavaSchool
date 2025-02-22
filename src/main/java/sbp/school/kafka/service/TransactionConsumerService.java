@@ -14,19 +14,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-public class ConsumerService {
+import static sbp.school.kafka.message.Message.PROCESSING_ERROR_MESSAGE;
+import static sbp.school.kafka.message.Message.PROCESSING_RESULT_MESSAGE;
 
-    private static final Logger log = LoggerFactory.getLogger(ConsumerService.class);
-
-    private static final String PROCESSING_RESULT_MESSAGE = "topic = {}, partition = {}, offset = {}, value = {}, groupId = {}";
-    private static final String PROCESSING_ERROR_MESSAGE = "Processing record failed {}";
+public class TransactionConsumerService {
+    private static final Logger log = LoggerFactory.getLogger(TransactionConsumerService.class);
 
     private final Consumer<String, Transaction> consumer;
     private final String topic;
 
     private List<Transaction> transactions;
 
-    public ConsumerService(Properties properties) {
+    public TransactionConsumerService(Properties properties) {
 
         consumer = new KafkaConsumer<>(properties);
         topic = properties.getProperty("topic.name");
@@ -34,7 +33,7 @@ public class ConsumerService {
         transactions = new ArrayList<>();
     }
 
-    public ConsumerService(Consumer<String, Transaction> consumer, String topic, List<Transaction> transactions) {
+    public TransactionConsumerService(Consumer<String, Transaction> consumer, String topic, List<Transaction> transactions) {
 
         this.consumer = consumer;
         this.topic = topic;
@@ -51,16 +50,7 @@ public class ConsumerService {
             while (true) {
                 ConsumerRecords<String, Transaction> records = consumer.poll(Duration.ofMillis(100));
 
-                for (ConsumerRecord<String, Transaction> record : records) {
-                    transactions.add(record.value());
-
-                    log.debug(PROCESSING_RESULT_MESSAGE,
-                            record.topic(),
-                            record.partition(),
-                            record.offset(),
-                            record.value(),
-                            consumer.groupMetadata().groupId());
-                }
+                process(records);
 
                 consumer.commitAsync();
             }
@@ -81,6 +71,22 @@ public class ConsumerService {
 
                 consumer.close();
             }
+        }
+    }
+
+    private void process(ConsumerRecords<String, Transaction> records) {
+
+        for (ConsumerRecord<String, Transaction> record : records) {
+            transactions.add(record.value());
+
+            log.error(PROCESSING_RESULT_MESSAGE,
+                    record.topic(),
+                    record.offset(),
+                    record.partition(),
+                    record.value(),
+                    consumer.groupMetadata().groupId());
+
+            TransactionSendInfoService.addReceivedTransaction(record.value());
         }
     }
 

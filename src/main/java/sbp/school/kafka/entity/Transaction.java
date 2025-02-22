@@ -2,9 +2,12 @@ package sbp.school.kafka.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 public class Transaction {
+
+    private Long id;
 
     private OperationType operationType;
 
@@ -25,10 +28,16 @@ public class Transaction {
 
     public Transaction(OperationType operationType, double amount, String account, LocalDateTime operationDate) {
 
+        this.id = Timestamp.valueOf(operationDate).getTime();
         this.operationType = operationType;
         this.amount = amount;
         this.account = account;
         this.operationDate = operationDate;
+    }
+
+    public Long getId() {
+
+        return id;
     }
 
     public OperationType getOperationType() {
@@ -49,5 +58,10 @@ public class Transaction {
     public LocalDateTime getOperationDate() {
 
         return operationDate;
+    }
+
+    public void setId(Long id) {
+
+        this.id = id;
     }
 }

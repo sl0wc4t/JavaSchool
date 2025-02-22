@@ -16,27 +16,27 @@ import java.util.Optional;
 
 import static org.testng.Assert.*;
 
-public class ProducerServiceTest {
+public class TransactionProducerServiceTest {
 
     private static final String TOPIC_NAME = "transaction-events-test";
 
     private MockProducer<String, Transaction> mockProducer;
 
-    private ProducerService producerService;
+    private TransactionProducerService transactionProducerService;
 
     @BeforeMethod
     void init() {
 
         mockProducer = new MockProducer<>(true, new StringSerializer(), new TransactionSerializer());
 
-        producerService = new ProducerService(mockProducer, TOPIC_NAME);
+        transactionProducerService = new TransactionProducerService(mockProducer, TOPIC_NAME);
     }
 
     @AfterMethod
     void finish() {
 
-        Optional.ofNullable(producerService)
-                .ifPresent(ProducerService::close);
+        Optional.ofNullable(transactionProducerService)
+                .ifPresent(TransactionProducerService::close);
     }
 
     @Test(description = "Успешная отправка")
@@ -46,7 +46,7 @@ public class ProducerServiceTest {
 
 
         expectedTransactions
-                .forEach(producerService::send);
+                .forEach(transactionProducerService::send);
 
 
         List<Transaction> actualTransactions = mockProducer.history().stream()
@@ -68,7 +68,7 @@ public class ProducerServiceTest {
 
         try {
 
-            producerService.send(transaction);
+            transactionProducerService.send(transaction);
         } catch (RuntimeException e) {
 
             exception = e;

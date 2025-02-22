@@ -17,7 +17,7 @@ import java.util.*;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.testng.Assert.*;
 
-public class ConsumerServiceTest {
+public class TransactionConsumerServiceTest {
 
     private static final String TOPIC_NAME = "transaction-events-test";
     private static final Integer PARTITION = 0;
@@ -26,7 +26,7 @@ public class ConsumerServiceTest {
 
     private List<Transaction> transactions;
 
-    private ConsumerService consumerService;
+    private TransactionConsumerService transactionConsumerService;
 
     @BeforeMethod
     void init() {
@@ -38,7 +38,7 @@ public class ConsumerServiceTest {
 
         transactions = new ArrayList<>();
 
-        consumerService = new ConsumerService(mockConsumer, TOPIC_NAME, transactions);
+        transactionConsumerService = new TransactionConsumerService(mockConsumer, TOPIC_NAME, transactions);
     }
 
     @AfterMethod
@@ -60,11 +60,11 @@ public class ConsumerServiceTest {
             mockConsumer.rebalance(List.of(new TopicPartition(TOPIC_NAME, PARTITION)));
             mockConsumer.addRecord(new ConsumerRecord<>(TOPIC_NAME, 0, 0, null, transaction));
         });
-        mockConsumer.schedulePollTask(() -> consumerService.stop());
+        mockConsumer.schedulePollTask(() -> transactionConsumerService.stop());
         mockConsumer.updateBeginningOffsets(Map.of(new TopicPartition(TOPIC_NAME, PARTITION), 0L));
 
 
-        consumerService.read();
+        transactionConsumerService.read();
 
 
         assertEquals(expectedTransactions.size(), transactions.size());
@@ -76,7 +76,7 @@ public class ConsumerServiceTest {
     void read_test_02() {
 
         mockConsumer.schedulePollTask(() -> mockConsumer.setPollException(new KafkaException("Kafka Exception")));
-        mockConsumer.schedulePollTask(() -> consumerService.stop());
+        mockConsumer.schedulePollTask(() -> transactionConsumerService.stop());
 
         HashMap<TopicPartition, Long> startingOffsets = new HashMap<>();
         TopicPartition tp = new TopicPartition(TOPIC_NAME, PARTITION);
@@ -88,7 +88,7 @@ public class ConsumerServiceTest {
 
         try {
 
-            consumerService.read();
+            transactionConsumerService.read();
         } catch (RuntimeException e) {
 
             exception = e;
